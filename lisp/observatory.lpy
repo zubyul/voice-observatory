@@ -1,12 +1,9 @@
 ;; observatory.lpy — Basilisp outer layer: pure bag math + console render.
-;; Bootstrap Hy hook + cwd on sys.path, then import the Hy module.
+;; Run with: PYTHONPATH=. basilisp run observatory.lpy
+;; (hy + obs_io imports work via :import once cwd is on PYTHONPATH.)
 
-(python/import sys os)
-(.insert sys/path 0 (os/getcwd))
-(python/import hy)
-(python/import obs_io)
-
-(ns observatory)
+(ns observatory
+  (:import hy obs_io))
 
 (defn installed-set [names] (set (seq names)))
 
