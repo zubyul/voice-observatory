@@ -52,3 +52,34 @@ watches them get installed.
 ## License
 
 MIT.
+
+
+## voicedl
+
+A companion CLI that talks directly to `mobileassetd` via the private
+`MobileAsset.framework`. This is **pathway #6** — bypassing the UI entirely,
+the same `MAAssetQuery.queryMetaDataSync` + `MAAsset.startDownload:andBlockUntilComplete:`
+calls that `Settings.app` / VoiceOver Utility make internally.
+
+```sh
+make                                          # clang -framework Foundation ...
+./voicedl list                                 # enumerate all voice assets
+./voicedl list --match Kyoko                   # filter by substring
+./voicedl dump --limit 1                       # show every attribute key of one asset
+./voicedl download --name "Kyoko (Premium)"    # block-install one voice
+./voicedl download --name Anna --quality Premium
+```
+
+Because `MobileAsset.framework` is a **private** framework:
+
+- Class names (`MAAssetQuery`, `MAAsset`) and selectors (`-initWithType:`,
+  `-queryMetaDataSync`, `-startDownload:andBlockUntilComplete:`) have been
+  stable for many macOS releases but are not guaranteed across updates.
+- Attribute keys (`VoiceName`, `LocalizedLanguage`, `VoiceIsPremium`, etc.)
+  drift between macOS versions; always run `./voicedl dump --limit 2` first
+  to verify the keys on your OS before scripting.
+- On failure the binary exits with a non-zero code and a specific error
+  identifying which class/selector was missing.
+
+Together with the `voice_observatory.py` TUI above, you can drive and
+observe a full download invariant-round-trip entirely from the terminal.
