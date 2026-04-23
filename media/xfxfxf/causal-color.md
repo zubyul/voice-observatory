@@ -29,3 +29,15 @@ Abduction: infer U1' = training_script_minus(Scottish phonemes).
 Action: do(U1 = U1').
 Prediction: E' would have weaker /x/ and /ʍ/ embedding; XFXFXF'(Q) fails to pronounce
             'loch' when Q contains it, substituting /k/ — a measurable deficit.
+
+## Two sonifications
+
+- `chain-sonification.m4a` — 3-trits-per-node (from H/S/L), per the
+  crossmodal-gf3 skill's literal ratio formula.
+- `chain-sonification-canonical.m4a` — 1-trit-per-node (hue only), per
+  the canonical `color-chord-bridge` skill's three fixed chord shapes
+  (cool/ergodic/warm). Cleaner harmonic distinction; less fine-grained.
+
+Both valid auditory projections of the same 11-node causal chain; they
+disagree only on whether (S, L) also modulate the chord or only colour
+the label.
