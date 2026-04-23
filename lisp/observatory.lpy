@@ -3,6 +3,7 @@
 ;; (hy + obs_io imports work via :import once cwd is on PYTHONPATH.)
 
 (ns observatory
+  (:require [basilisp.contrib.nrepl-server :as nrepl])
   (:import hy obs_io))
 
 (defn installed-set [names] (set (seq names)))
@@ -66,4 +67,9 @@
                       (count names) (:total summ)
                       (:full summ) (:partial summ) (:empty summ)
                       (or nxt "complete"))]
-      (obs_io/say-narrate msg))))
+      (obs_io/say-narrate msg)))
+  (when (some #{":nrepl"} (seq *command-line-args*))
+    (println "starting Basilisp nREPL on port 7890 (CIDER-compatible)")
+    (nrepl/start-server! {:host "127.0.0.1" :port 7890})
+    (println "blocking on nREPL; C-c to stop.")
+    (Thread/sleep 2147483647)))
