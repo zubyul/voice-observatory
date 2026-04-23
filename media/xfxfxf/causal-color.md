@@ -14,8 +14,9 @@ seed = 0x00000652d99bde5b
 |   7 | Q      | query_text                | -1   | 35.3 / 0.53 / 246.8° | #352A8A | rough, low pitch, left / down |
 |   8 | XFXFXF | xfxfxf_synth              | +0   | 64.3 / 0.78 /  87.6° | #AAEB5D | smooth, mid pitch, center |
 |   9 | L      | listener                  | -1   | 42.2 / 0.68 / 248.1° | #3622B5 | rough, low pitch, left / down |
+|  10 | Constraint | entitlement_gate          | -1   | 64.5 / 0.43 / 183.0° | #7EC7CB | rough, low pitch, left / down |
 
-Σ trit = 1    Σ mod 3 = 1    ⚠ imbalanced (add a balancer node)
+Σ trit = 0    Σ mod 3 = 0    ✓ GF(3)-conserved
 
 ## Intervention example: do(Fiona → Samantha)
 Breaks all incoming edges to node 'Fiona' (U1, U2 no longer cause Fiona).

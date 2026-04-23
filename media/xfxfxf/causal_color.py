@@ -104,6 +104,7 @@ CAUSAL_CHAIN = [
     ("Q",      "query_text",             "Exogenous at inference: arbitrary future text"),
     ("XFXFXF", "xfxfxf_synth",           "Structural: f_neural(E, Q) — the cloned voice"),
     ("L",      "listener",               "Perception of XFXFXF audio; downstream effect"),
+    ("Constraint","entitlement_gate",      "GF(3) balancer (trit=-1): Apple TTS EULA + ElevenLabs TOS — cool envelope bounding XFXFXF redistribution. Conserves the chain."),
 ]
 
 def main():
