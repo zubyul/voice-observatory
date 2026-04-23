@@ -39,3 +39,8 @@
 (defn load-neighbors [[path "voice-neighbors.json"]]
   (with [f (open path "r")]
     (json.load f)))
+
+(defn say-narrate [text [voice "Fiona (Enhanced)"]]
+  "Pipe a string through macOS say with a given voice.
+   Blocks until narration completes."
+  (subprocess.run ["say" "-v" voice text] :check False))

@@ -42,7 +42,8 @@
                   :else "empty")]
     (format "  %s %-10s %d/%d  %s" (bar got need) name got need tag)))
 
-(let [neighbors (obs_io/load-neighbors)
+(let [narrate? (boolean (some #{":narrate"} (seq *command-line-args*)))
+      neighbors (obs_io/load-neighbors)
       bags      (get neighbors "bags")
       order     (get neighbors "install_order_by_poetics")
       names     (obs_io/installed-names)
@@ -59,4 +60,10 @@
     (println (format "next install (poetics): %s" nxt)))
   (println)
   (doseq [row cov]
-    (println (render-line row))))
+    (println (render-line row)))
+  (when narrate?
+    (let [msg (format "Installed %d voices across %d bags. %d full, %d partial, %d empty. Next install by poetics, %s."
+                      (count names) (:total summ)
+                      (:full summ) (:partial summ) (:empty summ)
+                      (or nxt "complete"))]
+      (obs_io/say-narrate msg))))
