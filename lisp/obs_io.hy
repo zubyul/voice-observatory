@@ -44,3 +44,26 @@
   "Pipe a string through macOS say with a given voice.
    Blocks until narration completes."
   (subprocess.run ["say" "-v" voice text] :check False))
+
+(setv BAG-HAIKUS
+  {"X"  ["Between two forests"
+         "Lekha, Isha, Rishi stand --"
+         "a single shore rises"]
+   "D0" ["Rivers born of snow"
+         "Equations beneath starlight --"
+         "silence asks the form"]
+   "E"  ["Three scripts at the door --"
+         "Cyrillic, Aleph, Alef --"
+         "each breath a new sun"]
+   "F"  ["Rhythm across mountains"
+         "Devanagari meets Farsi --"
+         "prime numbers, whispered"]
+   "G"  ["Islands speak in tones"
+         "Thai, Vietnamese, Indonesian --"
+         "truth grows like new rain"]
+   "C1_prime" ["Li Shanlan in Qing"
+               "Chang's curvature, Chern's forms --"
+               "centuries fold flat"]})
+
+(defn get-bag-haiku [bag-name]
+  (get BAG-HAIKUS bag-name None))
