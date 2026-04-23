@@ -15,7 +15,7 @@
             :need (count members)
             :members (vec members)
             :missing (vec (remove installed (seq members)))}))
-       bags))
+       (.items bags)))
 
 (defn summarize [coverage]
   (let [c (vec coverage)]
