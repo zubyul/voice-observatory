@@ -1,0 +1,37 @@
+Rainbow passage. When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors.
+
+[[slnc 400]]
+
+Harvard sentence calibration. The birch canoe slid on the smooth planks. Glue the sheet to the dark blue background. It is easy to tell the depth of a well. These days, a chicken leg is a rare dish. Rice is often served in round bowls. The juice of lemons makes fine punch. The box was thrown beside the parked truck. Four hours of steady work faced us.
+
+[[slnc 400]]
+
+Scottish accommodation. Beyond the loch, the wee glen was utterly still. The bairn whispered, wheesht! A brae of heather, a burn of clear water.
+
+[[slnc 400]]
+
+Slow register. [[rate 140]]Highland mists reveal mathematical mysteries.[[rate 175]]
+
+[[slnc 300]]
+
+Fast register. [[rate 210]]The quick brown fox jumps over the lazy dog.[[rate 175]]
+
+[[slnc 300]]
+
+Lower pitch. [[pbas -4]]Quantum waves ripple through mathematical seas deep.[[pbas +0]]
+
+[[slnc 300]]
+
+Higher pitch. [[pbas +4]]Truths light emerges across infinitys vast space.[[pbas +0]]
+
+[[slnc 300]]
+
+Emphasis: three [[emph +]]times[[emph -]] the [[emph +]]truth[[emph -]]; three [[emph +]]forms[[emph -]].
+
+[[slnc 400]]
+
+Numbers and Greek alphabet. [[rate 160]]Zero, one, two, three, four, five, six, seven, eight, nine, ten. Alpha, beta, gamma, delta, epsilon, zeta, eta, theta, iota, kappa.[[rate 175]]
+
+[[slnc 400]]
+
+End of phonetic training sample.
