@@ -71,8 +71,8 @@
     (obs_io/say-narrate
       "Bag haikus for the extended voice-tree decomposition.")
     (doseq [item (obs_io/bag-haiku-items)]
-      (let [bag-name (get item 0)
-            lines (get item 1)]
+      (let [bag-name (first item)
+            lines (second item)]
         (obs_io/say-narrate (str "Bag " bag-name "."))
         (doseq [line (seq lines)]
           (obs_io/say-narrate line))
