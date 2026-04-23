@@ -1,5 +1,5 @@
-;; obs_io.hy — Hy inner layer: subprocess + filesystem + data-only helpers.
-;; Exposes plain-Python data (dict / list / str) for Basilisp to consume.
+;; obs_io.hy — Hy inner layer: subprocess + filesystem helpers.
+;; Returns plain Python data (dict / list / str) for Basilisp.
 
 (import subprocess os re json)
 
@@ -8,8 +8,8 @@
 
 (defn voices-raw []
   (try
-    (-> (subprocess.check_output ["say" "-v" "?"] :text True :timeout 2)
-        (.splitlines))
+    (.splitlines
+      (subprocess.check_output ["say" "-v" "?"] :text True :timeout 2))
     (except [e Exception] [])))
 
 (defn parse-voice-line [line]
@@ -20,19 +20,22 @@
      "enhanced" (in "(Enhanced)" line)}))
 
 (defn parse-voices []
-  "Return a list of {name, premium, enhanced} dicts for installed voices."
-  (lfor line (voices-raw)
-        :setv v (parse-voice-line line)
-        :if v
-        v))
+  (setv out [])
+  (for [line (voices-raw)]
+    (setv v (parse-voice-line line))
+    (when v (.append out v)))
+  out)
 
 (defn installed-names []
-  "Return a plain Python list of voice name strings."
-  (lfor v (parse-voices) (get v "name")))
+  (setv out [])
+  (for [v (parse-voices)]
+    (.append out (get v "name")))
+  out)
 
 (defn asset-count []
   (try (len (os.listdir ASSET-DIR))
        (except [e FileNotFoundError] 0)))
 
 (defn load-neighbors [[path "voice-neighbors.json"]]
-  (with [f (open path "r")] (json.load f)))
+  (with [f (open path "r")]
+    (json.load f)))

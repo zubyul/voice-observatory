@@ -1,37 +1,33 @@
-;; observatory.lpy — Basilisp outer layer: pure bag math + reactive spec.
-;; Imports obs_io (Hy) for all OS-facing I/O; stays side-effect-free here.
+;; observatory.lpy — Basilisp outer layer: pure bag math + console render.
+;; Bootstrap Hy hook + cwd on sys.path, then import the Hy module.
 
-(ns observatory
-  (:import obs-io))
+(python/import sys os)
+(.insert sys/path 0 (os/getcwd))
+(python/import hy)
+(python/import obs_io)
 
-(defn installed-set
-  "Python list of voice names -> Clojure set."
-  [names]
-  (set names))
+(ns observatory)
 
-(defn bag-coverage
-  "bags: python dict bag-name -> python list of voice-name strings.
-   installed: set of installed voice names.
-   Returns seq of {:name :got :need :members :missing}."
-  [bags installed]
+(defn installed-set [names] (set (seq names)))
+
+(defn bag-coverage [bags installed]
   (map (fn [[n members]]
-         (let [have (filter installed members)]
-           {:name     n
-            :got      (count have)
-            :need     (count members)
-            :members  (vec members)
-            :missing  (vec (remove installed members))}))
+         (let [have (filter installed (seq members))]
+           {:name n
+            :got  (count have)
+            :need (count members)
+            :members (vec members)
+            :missing (vec (remove installed (seq members)))}))
        bags))
 
 (defn summarize [coverage]
-  {:full    (count (filter #(= (:got %) (:need %)) coverage))
-   :partial (count (filter #(and (pos? (:got %)) (< (:got %) (:need %))) coverage))
-   :empty   (count (filter #(zero? (:got %)) coverage))
-   :total   (count coverage)})
+  (let [c (vec coverage)]
+    {:full    (count (filter #(= (:got %) (:need %)) c))
+     :partial (count (filter #(and (pos? (:got %)) (< (:got %) (:need %))) c))
+     :empty   (count (filter #(zero? (:got %)) c))
+     :total   (count c)}))
 
-(defn next-install
-  "order: python list; installed: set. Returns first uninstalled name, or nil."
-  [order installed]
+(defn next-install [order installed]
   (first (remove installed (seq order))))
 
 (defn bar [got need]
@@ -41,34 +37,29 @@
                           (apply str (repeat (- need got) ".")) "]")
     :else        (str "[" (apply str (repeat need ".")) "]")))
 
-(defn render-line [row]
-  (let [{:keys [name got need missing]} row
-        state (cond (= got need) "OK"
-                    (pos? got) (str "missing: "
-                                    (apply str (interpose ", " (take 2 missing)))
-                                    (if (> (count missing) 2) " ..." ""))
-                    :else "empty")]
-    (format "  %s %-10s %d/%d  %s"
-            (bar got need) name got need state)))
+(defn render-line [{:keys [name got need missing]}]
+  (let [tag (cond (= got need) "OK"
+                  (pos? got) (str "missing: "
+                                  (apply str (interpose ", " (take 2 missing)))
+                                  (if (> (count missing) 2) " ..." ""))
+                  :else "empty")]
+    (format "  %s %-10s %d/%d  %s" (bar got need) name got need tag)))
 
-(defn -main [& args]
-  (let [neighbors (obs-io/load-neighbors)
-        bags (get neighbors "bags")
-        order (get neighbors "install_order_by_poetics")
-        names (obs-io/installed-names)
-        assets (obs-io/asset-count)
-        installed (installed-set names)
-        cov (bag-coverage bags installed)
-        summ (summarize cov)
-        nxt (next-install order installed)]
-    (println (format "installed: %d voices; MobileAsset dir: %d entries"
-                     (count names) assets))
-    (println (format "bag coverage: %d full · %d partial · %d empty (of %d)"
-                     (:full summ) (:partial summ) (:empty summ) (:total summ)))
-    (when nxt
-      (println (format "next install (poetics): %s" nxt)))
-    (println)
-    (doseq [row cov]
-      (println (render-line row)))))
-
-(apply -main *command-line-args*)
+(let [neighbors (obs_io/load-neighbors)
+      bags      (get neighbors "bags")
+      order     (get neighbors "install_order_by_poetics")
+      names     (obs_io/installed-names)
+      assets    (obs_io/asset-count)
+      installed (installed-set names)
+      cov       (vec (bag-coverage bags installed))
+      summ      (summarize cov)
+      nxt       (next-install order installed)]
+  (println (format "installed: %d voices; MobileAsset dir: %d entries"
+                   (count names) assets))
+  (println (format "bag coverage: %d full · %d partial · %d empty (of %d)"
+                   (:full summ) (:partial summ) (:empty summ) (:total summ)))
+  (when nxt
+    (println (format "next install (poetics): %s" nxt)))
+  (println)
+  (doseq [row cov]
+    (println (render-line row))))
