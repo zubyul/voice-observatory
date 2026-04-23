@@ -54,32 +54,52 @@ watches them get installed.
 MIT.
 
 
-## voicedl
 
-A companion CLI that talks directly to `mobileassetd` via the private
-`MobileAsset.framework`. This is **pathway #6** — bypassing the UI entirely,
-the same `MAAssetQuery.queryMetaDataSync` + `MAAsset.startDownload:andBlockUntilComplete:`
-calls that `Settings.app` / VoiceOver Utility make internally.
+## voicedl (diagnostic / API-prober)
+
+An Objective-C CLI that attempts direct voice installation via the private
+`MobileAsset.framework`. Builds cleanly but **fails at the entitlement gate
+on unsigned binaries**.
+
+### Usage
 
 ```sh
-make                                          # clang -framework Foundation ...
-./voicedl list                                 # enumerate all voice assets
-./voicedl list --match Kyoko                   # filter by substring
-./voicedl dump --limit 1                       # show every attribute key of one asset
-./voicedl download --name "Kyoko (Premium)"    # block-install one voice
-./voicedl download --name Anna --quality Premium
+make
+./voicedl dump --limit 2
+./voicedl list
+./voicedl list --match Kyoko
+./voicedl download --name "Anna (Premium)" --quality Premium
 ```
 
-Because `MobileAsset.framework` is a **private** framework:
+### Why it does not work for end users
 
-- Class names (`MAAssetQuery`, `MAAsset`) and selectors (`-initWithType:`,
-  `-queryMetaDataSync`, `-startDownload:andBlockUntilComplete:`) have been
-  stable for many macOS releases but are not guaranteed across updates.
-- Attribute keys (`VoiceName`, `LocalizedLanguage`, `VoiceIsPremium`, etc.)
-  drift between macOS versions; always run `./voicedl dump --limit 2` first
-  to verify the keys on your OS before scripting.
-- On failure the binary exits with a non-zero code and a specific error
-  identifying which class/selector was missing.
+On this machine (macOS 26, Apple Silicon, Swift 6.3), calling
+`-queryMetaDataSync` returns non-zero for every asset type tested:
 
-Together with the `voice_observatory.py` TUI above, you can drive and
-observe a full download invariant-round-trip entirely from the terminal.
+| asset type                                              | rc |
+|---------------------------------------------------------|----|
+| `com.apple.MobileAsset.VoiceServicesVocalizerVoice`     | 2  |
+| `com.apple.MobileAsset.VoiceServicesAfterDeath`         | 5  |
+| `com.apple.MobileAsset.TextInput.SpellChecker`          | 2  |
+| `com.apple.MobileAsset.Trial`                           | 5  |
+| `com.apple.MobileAsset.UsageTrackingAgent`              | 5  |
+
+rc=2 (ENOENT-like) / rc=5 (EACCES-like) both signal that the framework
+refuses to consult the Apple catalog without the private entitlement
+`com.apple.private.mobileasset.allowed_asset_types`. macOS only grants
+that entitlement to Apple-signed system components — `Settings.app`,
+`sharingd`, `mobileassetd`, `softwareupdated`. No Developer-ID or
+ad-hoc signed binary can bypass it.
+
+### How voices are actually downloaded
+
+Via a UI pathway. They all surface the same `mobileassetd` fetch — the
+privileged entitlement is held by the UI process on the users behalf:
+
+```sh
+open "x-apple.systempreferences:com.apple.Accessibility-Settings.extension?Spoken Content"
+```
+
+`voicedl` remains useful as (a) a diagnostic confirming the private API
+surface is where expected, (b) a stub for signed MDM agents that could
+extend it, (c) a honest reference for anyone else rediscovering this gate.
