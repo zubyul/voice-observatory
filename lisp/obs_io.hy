@@ -67,3 +67,7 @@
 
 (defn get-bag-haiku [bag-name]
   (get BAG-HAIKUS bag-name None))
+
+(defn bag-haiku-items []
+  "Return a plain Python list of (name, lines) tuples sorted by name."
+  (sorted (.items BAG-HAIKUS)))

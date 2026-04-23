@@ -70,15 +70,9 @@
   (when (some #{":haikus"} (seq *command-line-args*))
     (obs_io/say-narrate
       "Bag haikus for the extended voice-tree decomposition.")
-    (doseq [[bag-name lines]
-            (sort-by key
-              {"X"        (obs_io/get-bag-haiku "X")
-               "D0"       (obs_io/get-bag-haiku "D0")
-               "E"        (obs_io/get-bag-haiku "E")
-               "F"        (obs_io/get-bag-haiku "F")
-               "G"        (obs_io/get-bag-haiku "G")
-               "C1_prime" (obs_io/get-bag-haiku "C1_prime")})]
-      (when lines
+    (doseq [item (obs_io/bag-haiku-items)]
+      (let [bag-name (get item 0)
+            lines (get item 1)]
         (obs_io/say-narrate (str "Bag " bag-name "."))
         (doseq [line (seq lines)]
           (obs_io/say-narrate line))
