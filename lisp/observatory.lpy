@@ -67,6 +67,22 @@
                       (:full summ) (:partial summ) (:empty summ)
                       (or nxt "complete"))]
       (obs_io/say-narrate msg)))
+  (when (some #{":plan"} (seq *command-line-args*))
+    (obs_io/say-narrate
+      (format "Install plan by poetics. Next up, %s."
+              (or nxt "nothing, the forest is complete")))
+    (doseq [row (filter #(and (pos? (:got %)) (< (:got %) (:need %))) cov)]
+      (obs_io/say-narrate
+        (format "Bag %s, %d of %d installed. Missing, %s."
+                (:name row) (:got row) (:need row)
+                (apply str (interpose " and " (:missing row))))))
+    (doseq [row (filter #(zero? (:got %)) cov)]
+      (obs_io/say-narrate
+        (format "Bag %s, empty. Needs all three, %s."
+                (:name row)
+                (apply str (interpose " and " (:members row))))))
+    (obs_io/say-narrate "Install plan complete."))
+
   (when (some #{":nrepl"} (seq *command-line-args*))
     (println "nREPL mode not yet wired up in basilisp 0.5.1 contribs; ")
     (println "start it manually: basilisp nrepl-server --port 7890")))
