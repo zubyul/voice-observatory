@@ -1,0 +1,52 @@
+{
+  "treewidth": 2,
+  "bags": {
+    "B0":     ["Fiona (Enhanced)", "Moira (Enhanced)", "Karen (Enhanced)"],
+    "B1":     ["Karen (Enhanced)", "Lee (Enhanced)", "Matilda (Enhanced)"],
+    "B2":     ["Moira (Enhanced)", "Fiona (Enhanced)", "Tessa (Enhanced)"],
+    "B3":     ["Fiona (Enhanced)", "Alice (Enhanced)", "Moira (Enhanced)"],
+    "B3.1":   ["Alice (Enhanced)", "Emma (Enhanced)", "Federica (Enhanced)"],
+    "B3.2":   ["Alice (Enhanced)", "Amelie (Premium)", "Jacques"],
+    "B3.2.1": ["Jacques", "Amelie (Premium)", "Monica"],
+    "B4":     ["Karen (Enhanced)", "Isha (Enhanced)", "Rishi (Enhanced)"],
+    "B4.1":   ["Isha (Enhanced)", "Sangeeta (Enhanced)", "Veena (Enhanced)"],
+    "C0":     ["Kyoko", "Tingting", "Yuna (Premium)"],
+    "C1":     ["Tingting", "Sinji (Premium)", "Meijia"],
+    "C2":     ["Kyoko", "Yuna (Premium)", "Linh (Enhanced)"],
+    "C4":     ["Kyoko", "Tingting", "Lekha"],
+    "X":      ["Lekha", "Isha (Enhanced)", "Rishi (Enhanced)"],
+    "D0":     ["Milena (Enhanced)", "Katya (Enhanced)", "Lesya (Enhanced)"],
+    "E":      ["Lesya (Enhanced)", "Carmit (Enhanced)", "Dariush (Enhanced)"],
+    "F":      ["Dariush (Enhanced)", "Kiyara (Premium)", "Lekha"],
+    "G":      ["Damayanti (Enhanced)", "Linh (Enhanced)", "Kanya"],
+    "C1_prime": ["Binbin (Enhanced)", "Meijia", "Yue (Premium)"]
+  },
+  "tree_edges": {
+    "Fiona_tree": [
+      ["B0","B1"], ["B0","B2"], ["B0","B3"], ["B0","B4"],
+      ["B3","B3.1"], ["B3","B3.2"], ["B3.2","B3.2.1"],
+      ["B4","B4.1"]
+    ],
+    "Kyoko_tree": [
+      ["C0","C1"], ["C0","C2"], ["C0","C4"]
+    ],
+    "cross_tree_bridges": [
+      ["B4","X"], ["X","C4"]
+    ],
+    "extended": [
+      ["D0","E"], ["E","F"], ["F","X"],
+      ["C2","G"], ["C1","C1_prime"]
+    ]
+  },
+  "shortest_path_Fiona_Kyoko": ["B0","B4","X","C4","C0"],
+  "install_order_by_poetics": [
+    "Amelie (Premium)", "Anna (Premium)", "Sinji (Premium)",
+    "Kiyara (Premium)", "Yuna (Premium)", "Petra (Premium)",
+    "Tunde (Premium)", "Alva (Premium)",
+    "Milena (Enhanced)", "Meijia (Enhanced)", "Carmit (Enhanced)",
+    "Dariush (Enhanced)", "Ewa (Premium)", "Han (Premium)",
+    "Tingting", "Lesya (Enhanced)", "Majed (Premium)",
+    "Serena (Premium)", "Yue (Premium)", "Lilian (Premium)",
+    "Binbin (Enhanced)", "Damayanti (Enhanced)", "Katya (Enhanced)"
+  ]
+}
