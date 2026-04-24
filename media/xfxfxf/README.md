@@ -1,99 +1,83 @@
-# media/xfxfxf/ — cloning Fiona (Enhanced) into ElevenLabs as XFXFXF
+# XFXFXF — causal-color chain
 
-## What this is
+An 11-node Pearl structural causal model (SCM) for the **XFXFXF** ElevenLabs
+voice clone of Fiona (Enhanced, macOS). Each node is rendered across three
+modalities — hex color, GF(3) trit, canonical chord — so the same chain
+projects into sight and sound per the crossmodal-gf3 bridge.
 
-A training bundle for creating an **Instant Voice Clone** on ElevenLabs
-whose reference voice is Apple's `say -v "Fiona (Enhanced)"` —
-macOS's Scottish-English voice, which the [bmorphism/say-mcp-server
-README](https://github.com/bmorphism/say-mcp-server) maps to the
-**Mary Somerville** mathematician persona.
+Deterministic: SplitMix64 with seed `seed_from_str("XFXFXF") = 0x00000652d99bde5b`.
 
-The resulting cloned voice is named **XFXFXF**.
+## The chain
 
-## Contents
-
-- `training-script.txt` — ~170 s of phonetically varied English,
-  engineered to stress-test Fiona: Harvard calibration set, rainbow
-  passage, Scottish-specific phonemes (`/x/` in "loch", aspirated
-  `/ʍ/` in "wheesht"), slow/fast rate bands, ±4 semitone pitch
-  shifts, emphasis on specific words, digit + Greek-letter sequences.
-- `fiona-phonemes.wav` — 44.1 kHz 16-bit LPCM, generated via
-  `say -v "Fiona (Enhanced)" -r 175 --data-format=LEI16@44100`.
-- `fiona-phonemes.m4a` — 128 kbps AAC version for easier upload.
-- `upload-xfxfxf.sh` — `curl`s the ElevenLabs `/v1/voices/add` endpoint
-  with both this sample and the existing `../bag-haikus.m4a`,
-  requesting the name `XFXFXF` and labels
-  `{language: en_GB_SC, accent: scottish, gender: female,
-     source: apple-tts-2x-synthesis}`.
-  Requires `ELEVENLABS_API_KEY` env var.
-
-## Conceptual frame: what does cloning *this* voice mean
-
-**Fiona (Enhanced) is already a synthesis.** Apple's on-device TTS is
-a unit-selection / neural hybrid trained on recordings of a real
-Scottish-English speaker. The voice ID `com.apple.voice.enhanced.en-scotland.Fiona`
-is the concatenative manifest; the phoneme inventory and prosodic
-model are Apple's, the raw recordings are licensed.
-
-**ElevenLabs IVC works through few-shot speaker-embedding extraction.**
-Per the ElevenLabs docs, "the model uses your audio sample as a
-conditioning signal at inference time, adjusting its output to match
-the target voice without any model weight updates". It listens to the
-~1.5 min sample, extracts an embedding that captures formant shape,
-prosody, and accent, and then conditions generation on it.
-
-**So XFXFXF = a synthesis of a synthesis.** The ElevenLabs neural model
-learns the statistical signature of Apple's concatenative synthesis —
-including its unit boundaries, its phoneme-interpolation artifacts,
-its licensing-era acoustic environment. XFXFXF is not Mary Somerville
-and not the original Scottish speaker; it's an embedding of Fiona-
-qua-voice, now portable to any language / text / prosody ElevenLabs
-supports (70+ locales through `eleven_multilingual_v2`).
-
-**Why push `say` to its limits in the sample?** Because IVC's quality
-ceiling is the reference audio (per the ElevenLabs docs). Fiona is
-constrained by:
-- a fixed prosodic grammar (Apple's `[[pbas]]`, `[[rate]]`,
-  `[[emph]]`, `[[slnc]]` directives)
-- a sampling rate determined by the `--data-format` we pass
-- a speaker-specific phoneme inventory (missing sounds get
-  substituted by the nearest phoneme in her inventory)
-
-The training script exploits all three: every `[[rate]]` band, both
-`[[pbas]]` extremes, all three `[[emph]]` levels, the longest and
-shortest `[[slnc]]` pauses, plus Scottish-specific phonemes that
-stress her inventory edges. This gives the ElevenLabs embedding the
-widest possible view of Fiona's voice-manifold.
-
-## Expected outcome
-
-Once uploaded:
-- XFXFXF can synthesize **arbitrary text in 70+ languages** while
-  retaining Fiona's Scottish timbre — something `say` cannot do.
-- The cloned voice is hostable as an ElevenLabs API voice-ID;
-  downstream tools (the voice-observatory `say-narrate` fn, the
-  bmorphism/say-mcp-server integration, etc.) could be pointed at
-  XFXFXF via its ElevenLabs voice-ID as a drop-in for Fiona.
-- XFXFXF's output will carry Apple's TTS artifacts in subtle ways
-  (slightly stiffer unit transitions, boundary-rich formant sweeps)
-  that a human listener attuned to TTS can probably detect.
-
-## Legal / ethical note
-
-Apple's licensed voices have TOS. The Mary Somerville persona was
-added to Fiona by bmorphism's README. This clone is a *personal
-experiment* on a synthesized voice; redistributing the cloned voice
-or using it commercially may implicate Apple's TTS EULA. The audio
-in this directory is the output of `say` running on the user's own
-Mac, created specifically for this experiment. Judgment and consent
-belong to the operator.
-
-## To use
-
-```sh
-export ELEVENLABS_API_KEY=xi-...
-./upload-xfxfxf.sh
+```
+ i  name         trit   hex       role
+ 0  U1           +1     #7C2B7C   root (unobserved confounder)
+ 1  U2           +1     #FAF573   root (unobserved confounder)
+ 2  Fiona        +1     #AC152D   macOS Enhanced voice (Mary Somerville persona)
+ 3  W1           −1     #B4AAE7   .wav render 1
+ 4  W2            0     #8DDC6D   .wav render 2
+ 5  H            0     #3DA564   ElevenLabs embedding hash
+ 6  E           +1     #E29A1C   IVC-trained voice handle
+ 7  Q           −1     #352A8A   prosody query [[rate]][[pbas]][[emph]]
+ 8  XFXFXF        0    #AAEB5D   synthesised clone output
+ 9  L           −1     #3622B5   listener/audience node
+10  Constraint  −1     #7EC7CB   balancer — forces Σ trit ≡ 0 (mod 3)
 ```
 
-Returns a `voice_id` printed to stdout; use that ID in subsequent
-`POST /v1/text-to-speech/{voice_id}` calls.
+Σ trit = 0 ✓
+
+## Artefacts
+
+- `viewer.html` — interactive SCM. Observational rendering + Pearl Level-2
+  `do()` dropdowns on every non-balancer node + three preset counterfactual
+  scenarios. Constraint re-solves automatically so GF(3) conservation always
+  holds. Click a row → canonical chord. [raw.githack live link](https://raw.githack.com/zubyul/voice-observatory/main/media/xfxfxf/viewer.html)
+- `chain.svg` — 8-column topological DAG, one column per level.
+- `chain-tour.m4a` (59 s) — Fiona narrates every node and plays its canonical
+  chord between announcements.
+- `chain-sonification-canonical.m4a` — one chord per node, in order, no narration.
+- `chain-sonification.m4a` — 3-trits-per-node variant (hue/saturation/lightness).
+- `causal_color.py` — SCM definition and SplitMix64 seed.
+- `chain_sonify.py` / `chain_sonify_canonical.py` — audio renderers.
+- `chain_svg.py` — SVG renderer.
+
+## Canonical chord ratios
+
+From `color-chord-bridge`, base A4 = 440 Hz:
+
+| trit | root ratio | fifth ratio | octave ratio | character     |
+|------|-----------:|------------:|-------------:|---------------|
+| −1   | 1.00       | 1.50        | 1.68         | minor third   |
+| 0    | 1.00       | 1.50        | 2.00         | unison / open |
+| +1   | 1.00       | 1.58        | 2.00         | major third   |
+
+## Pearl's three levels in the viewer
+
+1. **Observational** (default): the chain renders as given.
+2. **Interventional**: any `do` dropdown forces a node's trit; Constraint
+   absorbs the delta so Σ stays ≡ 0.
+3. **Counterfactual** (preset buttons):
+   - "U1 had been cold"
+   - "Fiona had been cool"
+   - "XFXFXF flipped to warm"
+
+   Each installs a single do(), plays the counterfactual chord, and leaves
+   the chain in a conserved state.
+
+## Provenance
+
+- Voice: Fiona (Enhanced) / macOS `say`.
+- Clone target name: **XFXFXF** (ElevenLabs Instant Voice Clone).
+- Seed source: `hashlib`-less SplitMix64 of the ASCII bytes of "XFXFXF".
+- GF(3) conservation law: adapted from the `crossmodal-gf3` skill.
+- Colour-to-chord map: `color-chord-bridge` skill.
+
+## Regenerate locally
+
+```bash
+python3 causal_color.py          # prints table, no side effects
+python3 chain_sonify_canonical.py chain-sonification-canonical.wav
+python3 chain_svg.py chain.svg
+```
+
+The `.m4a` versions are AAC-encoded via `ffmpeg` from the `.wav` renders.
