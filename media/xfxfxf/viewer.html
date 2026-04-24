@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>XFXFXF — causal-color chain · SCM</title>
+<style>
+  html,body{background:#111;color:#ddd;font:14px/1.5 ui-monospace,Menlo,monospace;margin:0}
+  main{max-width:1180px;margin:0 auto;padding:24px}
+  h1{font-size:20px;margin:0 0 4px;color:#fff}
+  .sub{color:#888;margin-bottom:16px;font-size:13px}
+  .grid{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+  .card{background:#181818;border:1px solid #2a2a2a;border-radius:6px;padding:14px}
+  audio{width:100%;margin-top:8px}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:4px 8px;text-align:left;border-bottom:1px solid #222;vertical-align:middle}
+  tr.row:hover{background:#202020;cursor:pointer}
+  .sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:6px;border:1px solid #333}
+  .trit-m{color:#9cf}.trit-0{color:#cea}.trit-p{color:#ebb}
+  .muted{color:#666;text-decoration:line-through}
+  .changed{color:#ffb74d;font-weight:700}
+  .note{color:#888;font-size:12px;margin-top:10px}
+  #svgwrap{background:#fff;border-radius:6px;padding:8px}
+  #svgwrap svg{width:100%;height:auto;display:block}
+  select{background:#111;color:#ddd;border:1px solid #333;padding:2px 4px;font-family:inherit;font-size:12px}
+  .bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .bar button{background:#2a2a2a;color:#ddd;border:1px solid #444;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px}
+  .bar button:hover{background:#333}
+  .sum{padding:3px 8px;border-radius:3px;font-weight:700}
+  .ok{background:#1a331a;color:#8f8}
+  .bad{background:#331a1a;color:#f88}
+</style>
+</head>
+<body>
+<main>
+  <h1>XFXFXF — causal-color chain · SCM</h1>
+  <div class="sub">11-node Pearl structural causal model · SplitMix64 seed <code>0x00000652d99bde5b</code> · GF(3) conservation law: Σ trit ≡ 0 (mod 3)</div>
+
+  <div class="grid">
+    <div class="card">
+      <div id="svgwrap">Loading SVG…</div>
+      <div class="note">observational graph (Level 1). click a row on the right to play a chord, or pick a trit under "do" to intervene (Level 2).</div>
+    </div>
+
+    <div class="card">
+      <div class="bar">
+        <strong>tour (Fiona):</strong>
+        <audio controls preload="metadata" src="chain-tour.m4a" style="flex:1;min-width:260px"></audio>
+      </div>
+
+      <div class="bar">
+        <button id="reset">reset to observational</button>
+        <span id="sum" class="sum ok">Σ = 0 ✓</span>
+      </div>
+
+      <table>
+        <thead><tr><th>#</th><th>node</th><th>trit</th><th>do</th><th>color</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="note">intervention semantics: <code>do(node = t)</code> forces that node's trit to <code>t</code>, then the <b>Constraint</b> node (index 10) absorbs the delta so the global GF(3) sum stays 0. you're watching Pearl's <code>P(y | do(X))</code> re-evaluation in real time.</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const NODES = [
+  {i: 0, name:"U1",         trit:+1, hex:"#7C2B7C"},
+  {i: 1, name:"U2",         trit:+1, hex:"#FAF573"},
+  {i: 2, name:"Fiona",      trit:+1, hex:"#AC152D"},
+  {i: 3, name:"W1",         trit:-1, hex:"#B4AAE7"},
+  {i: 4, name:"W2",         trit: 0, hex:"#8DDC6D"},
+  {i: 5, name:"H",          trit: 0, hex:"#3DA564"},
+  {i: 6, name:"E",          trit:+1, hex:"#E29A1C"},
+  {i: 7, name:"Q",          trit:-1, hex:"#352A8A"},
+  {i: 8, name:"XFXFXF",     trit: 0, hex:"#AAEB5D"},
+  {i: 9, name:"L",          trit:-1, hex:"#3622B5"},
+  {i:10, name:"Constraint", trit:-1, hex:"#7EC7CB"},
+];
+const BAL_IDX = 10;
+const RATIOS = { "-1":[1.0,1.5,1.68], "0":[1.0,1.5,2.0], "1":[1.0,1.58,2.0] };
+const BASE = 440.0;
+
+let ac;
+function ensureAc(){ if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); return ac; }
+function playChord(trit){
+  const a = ensureAc();
+  const [r1,r2,r3] = RATIOS[String(trit)];
+  const t0 = a.currentTime, dur = 0.6;
+  [BASE*r1, BASE*1.5*r2, BASE*2.0*r3].forEach(f=>{
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.18, t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g).connect(a.destination);
+    o.start(t0); o.stop(t0+dur+0.05);
+  });
+}
+
+const trLabel = t => t===-1?"−":t===0?"○":"+";
+const trClass = t => t===-1?"trit-m":t===0?"trit-0":"trit-p";
+
+const interventions = new Map();
+
+function balancerTrit(){
+  let s = 0;
+  for(const n of NODES){
+    if(n.i === BAL_IDX) continue;
+    s += interventions.has(n.i) ? interventions.get(n.i) : n.trit;
+  }
+  let r = ((-s) % 3 + 3) % 3;
+  return r===2 ? -1 : r;
+}
+
+function currentTrit(n){
+  if(interventions.has(n.i)) return interventions.get(n.i);
+  if(n.i === BAL_IDX) return balancerTrit();
+  return n.trit;
+}
+
+const tb = document.getElementById("tbody");
+const sumEl = document.getElementById("sum");
+
+function render(){
+  tb.innerHTML = "";
+  let sum = 0;
+  for(const n of NODES){
+    const cur = currentTrit(n);
+    sum += cur;
+    const orig = n.trit;
+    const intervened = interventions.has(n.i);
+    const balancerChanged = (n.i === BAL_IDX) && cur !== orig;
+    const tr = document.createElement("tr");
+    tr.className = "row";
+    const tritCell = intervened
+      ? `<span class="muted ${trClass(orig)}">${trLabel(orig)}</span> <span class="changed">→ ${trLabel(cur)}</span>`
+      : (balancerChanged
+        ? `<span class="muted ${trClass(orig)}">${trLabel(orig)}</span> <span class="changed">→ ${trLabel(cur)}</span>`
+        : `<span class="${trClass(cur)}">${trLabel(cur)}</span>`);
+    const doCell = n.i === BAL_IDX
+      ? `<span style="color:#666">(balancer)</span>`
+      : `<select data-i="${n.i}">
+           <option value="nop"${intervened?"":" selected"}>—</option>
+           <option value="-1"${intervened&&interventions.get(n.i)===-1?" selected":""}>−</option>
+           <option value="0"${intervened&&interventions.get(n.i)===0?" selected":""}>○</option>
+           <option value="1"${intervened&&interventions.get(n.i)===1?" selected":""}>+</option>
+         </select>`;
+    tr.innerHTML = `<td>${n.i}</td><td>${n.name}</td><td>${tritCell}</td><td>${doCell}</td><td><span class="sw" style="background:${n.hex}"></span><code>${n.hex}</code></td>`;
+    tr.addEventListener("click", e=>{
+      if(e.target.tagName === "SELECT" || e.target.tagName === "OPTION") return;
+      playChord(cur);
+    });
+    tb.appendChild(tr);
+  }
+  const mod = ((sum % 3) + 3) % 3;
+  sumEl.textContent = `Σ trit = ${sum} (mod 3 = ${mod}) ${mod===0?"✓":"✗"}`;
+  sumEl.className = "sum " + (mod===0 ? "ok" : "bad");
+  document.querySelectorAll("select[data-i]").forEach(sel=>{
+    sel.addEventListener("change", ev=>{
+      const i = +sel.dataset.i;
+      const v = sel.value;
+      if(v === "nop"){ interventions.delete(i); }
+      else { interventions.set(i, +v); }
+      render();
+      playChord(currentTrit(NODES[i]));
+    });
+  });
+}
+
+document.getElementById("reset").addEventListener("click", ()=>{ interventions.clear(); render(); });
+
+render();
+
+fetch("chain.svg").then(r=>r.text()).then(txt=>{
+  document.getElementById("svgwrap").innerHTML = txt;
+}).catch(e=>{
+  document.getElementById("svgwrap").textContent = "failed to load chain.svg: "+e;
+});
+</script>
+</body>
+</html>
