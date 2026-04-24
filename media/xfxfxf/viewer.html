@@ -25,6 +25,8 @@
   .bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
   .bar button{background:#2a2a2a;color:#ddd;border:1px solid #444;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:12px}
   .bar button:hover{background:#333}
+  .bar button.preset{background:#232332;border-color:#3a3a56;color:#cbd}
+  .bar button.preset:hover{background:#2d2d44}
   .sum{padding:3px 8px;border-radius:3px;font-weight:700}
   .ok{background:#1a331a;color:#8f8}
   .bad{background:#331a1a;color:#f88}
@@ -49,6 +51,9 @@
 
       <div class="bar">
         <button id="reset">reset to observational</button>
+        <button class="preset" data-i="0" data-v="-1">U1 had been cold</button>
+        <button class="preset" data-i="2" data-v="-1">Fiona had been cool</button>
+        <button class="preset" data-i="8" data-v="1">XFXFXF flipped to warm</button>
         <span id="sum" class="sum ok">Σ = 0 ✓</span>
       </div>
 
@@ -167,6 +172,15 @@ function render(){
 }
 
 document.getElementById("reset").addEventListener("click", ()=>{ interventions.clear(); render(); });
+document.querySelectorAll("button.preset").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    interventions.clear();
+    const i = +btn.dataset.i, v = +btn.dataset.v;
+    interventions.set(i, v);
+    render();
+    setTimeout(()=> playChord(currentTrit(NODES[i])), 30);
+  });
+});
 
 render();
 
